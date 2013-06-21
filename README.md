@@ -6,6 +6,7 @@ For information what this is and what you should do with it see the wiki on gith
 https://github.com/RedNifre/SlimeIt/wiki
 
 ...or simply watch this YouTube video:
+
 [![SlimeIt Video](http://img.youtube.com/vi/hjepZGCGNwo/0.jpg)](http://www.youtube.com/watch?v=hjepZGCGNwo)
 
 Implementation overview:
