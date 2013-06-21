@@ -1,5 +1,7 @@
 package de.michaelzinn.minecraft.bukkit.slimeit.main;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -17,8 +19,20 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Handles what happens when the player left clicks, right clicks or destroys a
+ * block.
+ * 
+ * FIXME Doesn't respect protection plugins like WorldGuard yet
+ * 
+ * @author Michael Zinn (@RedNifre)
+ * 
+ */
 public class BlockPunchListener implements Listener {
 
+	/**
+	 * Some constants for piston orientations.
+	 */
 	private final int DOWN = 0;
 	private final int UP = 1;
 	private final int NORTH = 2;
@@ -26,6 +40,9 @@ public class BlockPunchListener implements Listener {
 	private final int WEST = 4;
 	private final int EAST = 5;
 
+	/**
+	 * the data values of stone brick walls
+	 */
 	private final byte DATA_CLEAN = 0;
 	private final byte DATA_MOSSY = 1;
 	private final byte DATA_CRACKED = 2;
@@ -125,7 +142,7 @@ public class BlockPunchListener implements Listener {
 
 			if (block.getType() == Material.SMOOTH_BRICK) {
 				if (block.getData() == DATA_CLEAN) {
-					if (isPickAxe(tool)) {
+					if (isPickaxe(tool)) {
 						block.setData(DATA_CRACKED);
 						block.getState().update();
 					}
@@ -182,17 +199,30 @@ public class BlockPunchListener implements Listener {
 
 	}
 
-	private boolean isPickAxe(ItemStack stack) {
-		Material type = stack.getType();
+	static final Set<Material> PICKAXES = new HashSet<Material>();
+	static {
+		PICKAXES.add(Material.WOOD_PICKAXE);
+		PICKAXES.add(Material.STONE_PICKAXE);
+		PICKAXES.add(Material.IRON_PICKAXE);
+		PICKAXES.add(Material.GOLD_PICKAXE);
+		PICKAXES.add(Material.DIAMOND_PICKAXE);
+	}
 
-		return (type == Material.WOOD_PICKAXE) || (type == Material.STONE_PICKAXE) || (type == Material.IRON_PICKAXE) || (type == Material.GOLD_PICKAXE)
-				|| (type == Material.DIAMOND_PICKAXE);
+	private boolean isPickaxe(ItemStack stack) {
+		return PICKAXES.contains(stack.getType());
 	}
 
 	private void log(String s) {
 		Bukkit.getLogger().log(Level.INFO, s);
 	}
 
+	/**
+	 * Maybe all of these convenience methods should be exported to a
+	 * "Bukkit made easy" library? Hm...
+	 * 
+	 * @param base
+	 * @return
+	 */
 	private Block getPistonExtension(Block base) {
 		switch (base.getData() & 7) {
 		case DOWN:

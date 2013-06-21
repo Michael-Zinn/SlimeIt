@@ -12,16 +12,19 @@ import org.bukkit.block.BlockFace;
 /**
  * A look up table that defines some things about blocks:
  * 
- * - which blocks have "slime" on them (and on which face). Note that this
- * plugin counts moss as slime
+ * - Which blocks have "slime" on them (and on which face). Note that this
+ * plugin counts moss as slime.
  * 
- * - which blocks can get slime to them
+ * - Which blocks can get slime to them.
  * 
- * - which blocks turn into which other blocks when you add or remove slime to
- * them
+ * - Which blocks turn into which other blocks when you add or remove slime to
+ * them.
  * 
+ * - Only handles the easy cases. More complex things like breaking an extended
+ * sticky piston are handled in BlockPunchListener (which is slightly ugly, but
+ * works for now)
  * 
- * @author michael
+ * @author Michael Zinn (@RedNifre)
  * 
  */
 
@@ -57,10 +60,10 @@ public class SlimeRules {
 	 * applied or removed
 	 */
 	public SlimeRules() {
-		// This could take a good refactoring, it's way too much code. Maybe
-		// even define the relations in a txt file that can get parsed?
+		// FIXME This could take a good refactoring, it's way too much code.
+		// Maybe even define the relations in a txt file that can get parsed?
 
-		// useful
+		// useful stuff
 		Set<BlockFace> allFaces = new HashSet<BlockFace>();
 		allFaces.add(BlockFace.DOWN);
 		allFaces.add(BlockFace.UP);
@@ -243,11 +246,15 @@ public class SlimeRules {
 	 * 
 	 * Also allows linking slimy and non-slimy objects
 	 * 
-	 * @author michael
+	 * @author Michael Zinn (@RedNifre)
 	 * 
 	 */
 	private class SlimeMetaData {
 		public MaterialData materialData;
+		public Set<BlockFace> facesWithSlimeOnIt = new HashSet<BlockFace>();
+
+		public SlimeMetaData addSlimeToGet;
+		public SlimeMetaData removeSlimeToGet;
 
 		public SlimeMetaData(Material material, byte data) {
 			materialData = new MaterialData(material, data);
@@ -260,15 +267,5 @@ public class SlimeRules {
 			block.setData(materialData.data);
 			block.getState().update();
 		}
-
-		// public SlimeMetaData(MaterialData materialData) {
-		// this.materialData = materialData;
-		// }
-
-		public Set<BlockFace> facesWithSlimeOnIt = new HashSet<BlockFace>();
-
-		public SlimeMetaData addSlimeToGet;
-		public SlimeMetaData removeSlimeToGet;
-
 	}
 }

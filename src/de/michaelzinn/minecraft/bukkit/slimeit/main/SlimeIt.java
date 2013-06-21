@@ -3,6 +3,11 @@ package de.michaelzinn.minecraft.bukkit.slimeit.main;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+/**
+ * 
+ * @author Michael Zinn (@RedNifre)
+ * 
+ */
 public class SlimeIt extends JavaPlugin {
 
 	@Override

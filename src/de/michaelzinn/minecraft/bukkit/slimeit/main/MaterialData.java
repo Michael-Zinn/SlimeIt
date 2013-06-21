@@ -4,9 +4,14 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 
 /**
+ * The type of a block is defined both by its material (e.g. stone brick) AND
+ * the data value (e.g. differentiating between normal, mossy and cracked). This
+ * class combines these two into one which simplifies things like using material
+ * + data as a key in a Map.
+ * 
  * Useful to express things like "mossy cobblestone wall"
  * 
- * @author michael
+ * @author Michael Zinn (@RedNifre)
  * 
  */
 public class MaterialData {
@@ -33,8 +38,8 @@ public class MaterialData {
 
 	@Override
 	public int hashCode() {
-		// Questionable, but can be fixed later, since it doesn't get persisted
-		// (at least I hope so)
+		// FIXME Questionable, but can be fixed later, since it doesn't get
+		// persisted (at least I hope so)
 		return (material.getId() << 8) | data;
 	}
 }
