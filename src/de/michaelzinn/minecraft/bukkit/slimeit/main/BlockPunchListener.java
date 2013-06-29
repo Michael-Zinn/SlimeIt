@@ -27,9 +27,9 @@ import org.bukkit.inventory.ItemStack;
  * 
  */
 public class BlockPunchListener implements Listener {
-	
+
 	private final SlimeIt plugin;
-	
+
 	/**
 	 * Some constants for piston orientations.
 	 */
@@ -48,11 +48,11 @@ public class BlockPunchListener implements Listener {
 	private final byte DATA_CRACKED = 2;
 
 	SlimeRules slimeDefinition = new SlimeRules();
-	
+
 	public BlockPunchListener(SlimeIt main) {
 		plugin = main;
 	}
-	
+
 	@EventHandler
 	public void playerBreak(BlockBreakEvent event) {
 		// blocks with slime should drop as items without slime + 1 slimeball
@@ -69,7 +69,7 @@ public class BlockPunchListener implements Listener {
 
 		// special case1: cracked stone bricks
 		if (block.getType() == Material.SMOOTH_BRICK) {
-			if (block.getData() == DATA_CRACKED) { // cracked
+			if (block.getData() == DATA_CRACKED) {
 				event.setCancelled(true);
 				block.setType(Material.AIR);
 				world.dropItemNaturally(location, new ItemStack(Material.SMOOTH_BRICK));
@@ -115,6 +115,10 @@ public class BlockPunchListener implements Listener {
 
 	@EventHandler
 	public void playerInteract(PlayerInteractEvent event) {
+		if (event.isCancelled()) {
+			return;
+		}
+
 		Block block = event.getClickedBlock();
 
 		if (block == null) {
@@ -125,19 +129,6 @@ public class BlockPunchListener implements Listener {
 		World world = block.getWorld();
 		Player player = event.getPlayer();
 		ItemStack tool = player.getItemInHand();
-
-		// block.setType(Material.GOLD_BLOCK);
-
-		// if (tool.getType() == Material.BONE) {
-		// if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-		// block.setData((byte) ((block.getData() - 1) % 16));
-		// log("" + block.getData());
-		// } else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-		// block.setData((byte) ((block.getData() + 1) % 16));
-		// log("" + block.getData());
-		// }
-		// return;
-		// }
 
 		if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
 			// log("data=" + block.getData());
@@ -238,7 +229,7 @@ public class BlockPunchListener implements Listener {
 			return base.getRelative(BlockFace.EAST);
 		}
 
-		// unreachable code (as long as the argument is actually an extension)
+		// unreachable code (as long as the argument is actually a base)
 		return null;
 	}
 
