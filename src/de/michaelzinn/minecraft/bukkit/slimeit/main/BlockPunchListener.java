@@ -111,8 +111,6 @@ public class BlockPunchListener implements Listener {
 
 	@EventHandler
 	public void playerInteract(PlayerInteractEvent event) {
-		Bukkit.getLogger().log(Level.INFO, "slime punch!");
-
 		Block block = event.getClickedBlock();
 
 		if (block == null) {
@@ -162,11 +160,8 @@ public class BlockPunchListener implements Listener {
 				world.playSound(block.getLocation(), Sound.SLIME_ATTACK, 1, 1);
 			}
 		} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			log("Right click");
 			if (tool.getType() == Material.SLIME_BALL) {
-				log("has a slime ball");
 				if (slimeDefinition.canGetSlimeOnIt(block, event.getBlockFace())) {
-					log("can get slimed");
 					int targetAmount = tool.getAmount() - 1;
 					if (targetAmount <= 0) {
 						player.setItemInHand(null);
