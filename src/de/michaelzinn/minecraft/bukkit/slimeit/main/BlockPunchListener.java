@@ -2,9 +2,7 @@ package de.michaelzinn.minecraft.bukkit.slimeit.main;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -29,7 +27,9 @@ import org.bukkit.inventory.ItemStack;
  * 
  */
 public class BlockPunchListener implements Listener {
-
+	
+	private final SlimeIt plugin;
+	
 	/**
 	 * Some constants for piston orientations.
 	 */
@@ -48,7 +48,11 @@ public class BlockPunchListener implements Listener {
 	private final byte DATA_CRACKED = 2;
 
 	SlimeRules slimeDefinition = new SlimeRules();
-
+	
+	public BlockPunchListener(SlimeIt main) {
+		plugin = main;
+	}
+	
 	@EventHandler
 	public void playerBreak(BlockBreakEvent event) {
 		// blocks with slime should drop as items without slime + 1 slimeball
@@ -111,8 +115,6 @@ public class BlockPunchListener implements Listener {
 
 	@EventHandler
 	public void playerInteract(PlayerInteractEvent event) {
-		Bukkit.getLogger().log(Level.INFO, "slime punch!");
-
 		Block block = event.getClickedBlock();
 
 		if (block == null) {
@@ -162,11 +164,8 @@ public class BlockPunchListener implements Listener {
 				world.playSound(block.getLocation(), Sound.SLIME_ATTACK, 1, 1);
 			}
 		} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			log("Right click");
 			if (tool.getType() == Material.SLIME_BALL) {
-				log("has a slime ball");
 				if (slimeDefinition.canGetSlimeOnIt(block, event.getBlockFace())) {
-					log("can get slimed");
 					int targetAmount = tool.getAmount() - 1;
 					if (targetAmount <= 0) {
 						player.setItemInHand(null);
@@ -213,7 +212,7 @@ public class BlockPunchListener implements Listener {
 	}
 
 	private void log(String s) {
-		Bukkit.getLogger().log(Level.INFO, s);
+		plugin.log.info(s);
 	}
 
 	/**

@@ -1,5 +1,7 @@
 package de.michaelzinn.minecraft.bukkit.slimeit.main;
 
+import java.util.logging.Logger;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -9,10 +11,11 @@ import org.bukkit.plugin.java.JavaPlugin;
  * 
  */
 public class SlimeIt extends JavaPlugin {
-
+	public Logger log;
 	@Override
 	public void onEnable() {
 		super.onEnable();
+		log = getLogger();
 		Bukkit.getPluginManager().registerEvents(new BlockPunchListener(), this);
 	}
 }
