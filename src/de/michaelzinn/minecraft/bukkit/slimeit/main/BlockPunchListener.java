@@ -29,25 +29,7 @@ import org.bukkit.inventory.ItemStack;
 public class BlockPunchListener implements Listener {
 
 	private final SlimeIt plugin;
-
-	/**
-	 * Some constants for piston orientations.
-	 */
-	private final int DOWN = 0;
-	private final int UP = 1;
-	private final int NORTH = 2;
-	private final int SOUTH = 3;
-	private final int WEST = 4;
-	private final int EAST = 5;
-
-	/**
-	 * the data values of stone brick walls
-	 */
-	private final byte DATA_CLEAN = 0;
-	private final byte DATA_MOSSY = 1;
-	private final byte DATA_CRACKED = 2;
-
-	SlimeRules slimeDefinition = new SlimeRules();
+	SlimeRules slimeRules = new SlimeRules();
 
 	public BlockPunchListener(SlimeIt main) {
 		plugin = main;
@@ -55,12 +37,18 @@ public class BlockPunchListener implements Listener {
 
 	@EventHandler
 	public void playerBreak(BlockBreakEvent event) {
+		if (event.isCancelled()) {
+			return;
+		}
+
 		// blocks with slime should drop as items without slime + 1 slimeball
 
 		Block block = event.getBlock();
-		if (block == null)
+		if (block == null) {
 			return;
-		Material material = block.getType();
+		}
+
+		Material type = block.getType();
 		byte data = block.getData();
 		Location location = block.getLocation();
 		World world = block.getWorld();
@@ -68,8 +56,8 @@ public class BlockPunchListener implements Listener {
 		ItemStack slimeBall = new ItemStack(Material.SLIME_BALL);
 
 		// special case1: cracked stone bricks
-		if (block.getType() == Material.SMOOTH_BRICK) {
-			if (block.getData() == DATA_CRACKED) {
+		if (type == Material.SMOOTH_BRICK) {
+			if (data == DATA_CRACKED) {
 				event.setCancelled(true);
 				block.setType(Material.AIR);
 				world.dropItemNaturally(location, new ItemStack(Material.SMOOTH_BRICK));
@@ -79,7 +67,7 @@ public class BlockPunchListener implements Listener {
 
 		// special case 2: pistons
 		// piston head
-		if (material == Material.PISTON_EXTENSION) {
+		if (type == Material.PISTON_EXTENSION) {
 			if (isStickyExtension(block)) {
 				event.setCancelled(true);
 				Block base = getPistonBase(block);
@@ -91,7 +79,7 @@ public class BlockPunchListener implements Listener {
 			}
 		}
 		// sticky piston base
-		if (material == Material.PISTON_STICKY_BASE) {
+		if (type == Material.PISTON_STICKY_BASE) {
 			if (isExtendedBase(block)) {
 				event.setCancelled(true);
 				Block extension = getPistonExtension(block);
@@ -103,11 +91,12 @@ public class BlockPunchListener implements Listener {
 			}
 		}
 
-		if (slimeDefinition.hasSlimeOnIt(block)) {
+		// simple cases, break according to slimeRules
+		if (slimeRules.hasSlimeOnIt(block)) {
 			event.setCancelled(true);
 			MaterialData original = MaterialData.from(block);
 			block.setType(Material.AIR);
-			world.dropItemNaturally(location, new ItemStack(slimeDefinition.withoutSlime(original).material));
+			world.dropItemNaturally(location, new ItemStack(slimeRules.withoutSlime(original).material));
 			world.dropItemNaturally(location, slimeBall);
 		}
 
@@ -131,7 +120,6 @@ public class BlockPunchListener implements Listener {
 		ItemStack tool = player.getItemInHand();
 
 		if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-			// log("data=" + block.getData());
 
 			if (block.getType() == Material.SMOOTH_BRICK) {
 				if (block.getData() == DATA_CLEAN) {
@@ -142,28 +130,23 @@ public class BlockPunchListener implements Listener {
 				}
 			}
 
-			if (slimeDefinition.hasSlimeOnIt(block, event.getBlockFace())) {
-				// special case for piston heads
-				slimeDefinition.removeSlime(block);
-				if (block.getType() == Material.PISTON_EXTENSION) {
-					Block base = getPistonBase(block);
-					byte data = base.getData();
-					base.setTypeIdAndData(Material.PISTON_BASE.getId(), data, true);
-				}
+			if (slimeRules.hasSlimeOnIt(block, event.getBlockFace())) {
+				slimeRules.removeSlime(block);
 
 				world.dropItemNaturally(block.getRelative(face).getLocation(), new ItemStack(Material.SLIME_BALL, 1));
 				world.playSound(block.getLocation(), Sound.SLIME_ATTACK, 1, 1);
 			}
+
 		} else if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if (tool.getType() == Material.SLIME_BALL) {
-				if (slimeDefinition.canGetSlimeOnIt(block, event.getBlockFace())) {
+				if (slimeRules.canGetSlimeOnIt(block, event.getBlockFace())) {
 					int targetAmount = tool.getAmount() - 1;
 					if (targetAmount <= 0) {
 						player.setItemInHand(null);
 					} else {
 						tool.setAmount(targetAmount);
 					}
-					slimeDefinition.addSlime(block);
+					slimeRules.addSlime(block);
 
 					Sound sound = Sound.SLIME_WALK;
 					switch ((int) (Math.rint(Math.random() * 1))) {
@@ -175,19 +158,152 @@ public class BlockPunchListener implements Listener {
 						break;
 					}
 					player.getWorld().playSound(block.getLocation(), sound, 1, 1);
-
-					// special case for piston heads
-					if (block.getType() == Material.PISTON_EXTENSION) {
-						Block base = getPistonBase(block);
-						byte data = base.getData();
-						base.setTypeIdAndData(Material.PISTON_STICKY_BASE.getId(), data, true);
-					}
-
 				}
 			}
 		}
-
 	}
+
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	// Everything past here should be moved to a BukkitPlus library later. E.g.,
+	// when Java 8 gets released in 2014, BukkitPlus could be an interface that
+	// includes everything down there as default method implementations, so this
+	// BlockPunchListener could include them by "implementing" said interface.
+	//
+	// You can discuss this issue here:
+	// https://github.com/RedNifre/SlimeIt/issues/10
+	//
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+	// ////////////////////////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Replaces a block in a smart way: Tries to preserve orientation, if
+	 * possible. When replacing a piston with another piston, tries to preserve
+	 * extension and orientation. When replacing any part of an extended piston
+	 * with something other than a piston, it replaces the base with newMaterial
+	 * and the extension with air.
+	 * 
+	 * @param block
+	 * @param newMaterial
+	 */
+	public static void replace(Block block, Material newMaterial) {
+		if (isPiston(block)) {
+			if (isPiston(newMaterial)) {
+				// replace keeping orientation and extension state
+				if (isExtendedPiston(block)) {
+					Block base = getPistonBase(block);
+					Block extension = getPistonExtension(block);
+					if (isStickyPiston(newMaterial)) {
+						base.setTypeIdAndData(Material.PISTON_STICKY_BASE.getId(), base.getData(), true);
+						extension.setTypeIdAndData(Material.PISTON_EXTENSION.getId(), (byte) (extension.getData() | 8), true);
+					}
+					else {
+						base.setTypeIdAndData(Material.PISTON_BASE.getId(), base.getData(), true);
+						extension.setTypeIdAndData(Material.PISTON_EXTENSION.getId(), (byte) (extension.getData() & 7), true);
+					}
+				}
+				else {
+					if (isStickyPiston(newMaterial)) {
+						block.setTypeIdAndData(Material.PISTON_STICKY_BASE.getId(), block.getData(), true);
+					}
+					else {
+						block.setTypeIdAndData(Material.PISTON_BASE.getId(), block.getData(), true);
+					}
+				}
+			}
+			else {
+				// remove the extension
+				if (isExtendedPiston(block)) {
+					Block base = getPistonBase(block);
+					Block extension = getPistonExtension(block);
+
+					base.setType(newMaterial); // TODO preserve orientation?
+					extension.setType(Material.AIR);
+				}
+				else {
+					block.setType(newMaterial);
+				}
+			}
+		} else {
+			// TODO needs to be well defined for all rotatable blocks
+			// just copying the data won't cut it.
+			block.setTypeIdAndData(newMaterial.getId(), block.getData(), true);
+		}
+	}
+
+	public static void replace(Block block, MaterialData newMaterialData) {
+		// TODO this is currently mostly copy paste from the previous method.
+		// Needs to
+		// be refactored later
+		if (isPiston(block)) {
+			if (isPiston(newMaterialData)) {
+				// replace keeping orientation and extension state
+				if (isExtendedPiston(block)) {
+					Block base = getPistonBase(block);
+					Block extension = getPistonExtension(block);
+					if (isStickyPiston(newMaterialData)) {
+						base.setTypeIdAndData(Material.PISTON_STICKY_BASE.getId(), base.getData(), true);
+						// can't set Type, since that would break the piston
+						// base ???
+						extension.setData((byte) (extension.getData() | 8), true);
+						extension.getState().update();
+					}
+					else {
+						base.setTypeIdAndData(Material.PISTON_BASE.getId(), base.getData(), true);
+						// can't set Type, since that would break the piston
+						// base ???
+						extension.setData((byte) (extension.getData() & 7), true);
+						extension.getState().update();
+					}
+				}
+				else {
+					if (isStickyPiston(newMaterialData)) {
+						block.setTypeIdAndData(Material.PISTON_STICKY_BASE.getId(), block.getData(), true);
+					}
+					else {
+						block.setTypeIdAndData(Material.PISTON_BASE.getId(), block.getData(), true);
+					}
+				}
+			}
+			else {
+				if (isExtendedPiston(block)) {
+					// remove the extension
+
+					Block base = getPistonBase(block);
+					Block extension = getPistonExtension(block);
+
+					base.setType(newMaterialData.material); // TODO preserve
+															// orientation?
+					extension.setType(Material.AIR);
+				}
+				else {
+					block.setType(newMaterialData.material);
+				}
+			}
+		} else {
+			// TODO needs to be well defined for all rotatable blocks
+			// just copying the data won't cut it.
+			block.setTypeIdAndData(newMaterialData.material.getId(), newMaterialData.data, true);
+		}
+	}
+
+	private void log(String s) {
+		plugin.log.info(s);
+	}
+
+	/**
+	 * the data values of stone brick walls
+	 */
+	private final byte DATA_CLEAN = 0;
+	private final byte DATA_MOSSY = 1;
+	private final byte DATA_CRACKED = 2;
+
+	// Pick axes //////////////////////////////////////////////
 
 	static final Set<Material> PICKAXES = new HashSet<Material>();
 	static {
@@ -202,65 +318,165 @@ public class BlockPunchListener implements Listener {
 		return PICKAXES.contains(stack.getType());
 	}
 
-	private void log(String s) {
-		plugin.log.info(s);
+	// Orientations ///////////////////////////////////////////
+	// TODO check if this also works for pumpkins, dispensers etc.
+
+	// currently, these are tailored for pistons
+	private static final int DOWN = 0;
+	private static final int UP = 1;
+	private static final int NORTH = 2;
+	private static final int SOUTH = 3;
+	private static final int WEST = 4;
+	private static final int EAST = 5;
+
+	// Pistons ////////////////////////////////////////////////
+
+	static final Set<Material> PISTONS = new HashSet<Material>();
+	static {
+		PISTONS.add(Material.PISTON_BASE);
+		PISTONS.add(Material.PISTON_STICKY_BASE);
+		PISTONS.add(Material.PISTON_EXTENSION);
+	}
+
+	public static boolean isPiston(Block block) {
+		return PISTONS.contains(block.getType());
+	}
+
+	public static boolean isPiston(Material material) {
+		return PISTONS.contains(material);
+	}
+
+	public static boolean isPiston(MaterialData materialData) {
+		return PISTONS.contains(materialData.material);
+	}
+
+	static final Set<Material> PISTON_BASES = new HashSet<Material>();
+	static {
+		PISTON_BASES.add(Material.PISTON_BASE);
+		PISTON_BASES.add(Material.PISTON_STICKY_BASE);
+	}
+
+	public static boolean isPistonBase(Block block) {
+		return PISTON_BASES.contains(block);
 	}
 
 	/**
-	 * Maybe all of these convenience methods should be exported to a
-	 * "Bukkit made easy" library? Hm...
 	 * 
-	 * @param base
-	 * @return
+	 * @param pistonPart
+	 * @return the extension or null if there's no extension
 	 */
-	private Block getPistonExtension(Block base) {
-		switch (base.getData() & 7) {
-		case DOWN:
-			return base.getRelative(BlockFace.DOWN);
-		case UP:
-			return base.getRelative(BlockFace.UP);
-		case NORTH:
-			return base.getRelative(BlockFace.NORTH);
-		case SOUTH:
-			return base.getRelative(BlockFace.SOUTH);
-		case WEST:
-			return base.getRelative(BlockFace.WEST);
-		case EAST:
-			return base.getRelative(BlockFace.EAST);
+	private static Block getPistonExtension(Block pistonPart) {
+		if (!isPiston(pistonPart)) {
+			return null; // should this throw a runtime exception?
+		}
+		switch (pistonPart.getType()) {
+		case PISTON_EXTENSION:
+			return pistonPart;
+		case PISTON_BASE:
+		case PISTON_STICKY_BASE:
+			if (isExtendedBase(pistonPart)) {
+				switch (pistonPart.getData() & 7) {
+				case DOWN:
+					return pistonPart.getRelative(BlockFace.DOWN);
+				case UP:
+					return pistonPart.getRelative(BlockFace.UP);
+				case NORTH:
+					return pistonPart.getRelative(BlockFace.NORTH);
+				case SOUTH:
+					return pistonPart.getRelative(BlockFace.SOUTH);
+				case WEST:
+					return pistonPart.getRelative(BlockFace.WEST);
+				case EAST:
+					return pistonPart.getRelative(BlockFace.EAST);
+				}
+			} else {
+				return null;
+			}
 		}
 
-		// unreachable code (as long as the argument is actually a base)
-		return null;
+		// unreachabe code
+		throw new RuntimeException("The code is wrong, isPiston() and getPistonExtension() are no longer compatible!");
 	}
 
-	private Block getPistonBase(Block extension) {
-		switch (extension.getData() & 7) {
-		case DOWN:
-			return extension.getRelative(BlockFace.UP);
-		case UP:
-			return extension.getRelative(BlockFace.DOWN);
-		case NORTH:
-			return extension.getRelative(BlockFace.SOUTH);
-		case SOUTH:
-			return extension.getRelative(BlockFace.NORTH);
-		case WEST:
-			return extension.getRelative(BlockFace.EAST);
-		case EAST:
-			return extension.getRelative(BlockFace.WEST);
+	public static Block getPistonBase(Block pistonPart) {
+		if (!isPiston(pistonPart)) {
+			return null; // should this throw a runtime exception?
+		}
+		switch (pistonPart.getType()) {
+		case PISTON_BASE:
+		case PISTON_STICKY_BASE:
+			return pistonPart;
+		case PISTON_EXTENSION:
+			switch (pistonPart.getData() & 7) {
+			case DOWN:
+				return pistonPart.getRelative(BlockFace.UP);
+			case UP:
+				return pistonPart.getRelative(BlockFace.DOWN);
+			case NORTH:
+				return pistonPart.getRelative(BlockFace.SOUTH);
+			case SOUTH:
+				return pistonPart.getRelative(BlockFace.NORTH);
+			case WEST:
+				return pistonPart.getRelative(BlockFace.EAST);
+			case EAST:
+				return pistonPart.getRelative(BlockFace.WEST);
+			}
 		}
 
-		// unreachable code (as long as the argument is actually an extension)
-		return null;
+		// unreachable code
+		throw new RuntimeException("The code is wrong, isPiston() and getPistonBase() are no longer compatible!");
 	}
 
-	/**
-	 * only call with piston extensions
-	 * 
-	 * @param extension
-	 * @return
-	 */
-	private boolean isStickyExtension(Block extension) {
-		return (extension.getData() & 8) != 0;
+	public static boolean isStickyPiston(Material pistonPart) {
+		return pistonPart == Material.PISTON_STICKY_BASE; // there are no sticky
+															// extension
+															// materials
+	}
+
+	public static boolean isStickyPiston(MaterialData pistonPart) {
+		return isStickyPiston(pistonPart.material, pistonPart.data);
+	}
+
+	public static boolean isStickyPiston(Block pistonPart) {
+		return isStickyPiston(pistonPart.getType(), pistonPart.getData());
+	}
+
+	public static boolean isStickyPiston(Material material, byte data) {
+		return material == Material.PISTON_STICKY_BASE || isStickyExtension(material, data);
+	}
+
+	public static boolean isStickyExtension(MaterialData extension) {
+		return isStickyExtension(extension.material, extension.data);
+	}
+
+	public static boolean isStickyExtension(Block extension) {
+		return isStickyExtension(extension.getType(), extension.getData());
+	}
+
+	public static boolean isStickyExtension(Material material, byte data) {
+		return material == Material.PISTON_EXTENSION && (data & 8) != 0;
+	}
+
+	public static boolean isExtendedPiston(Block block) {
+		switch (block.getType()) {
+		case PISTON_EXTENSION:
+			return true;
+		case PISTON_BASE:
+		case PISTON_STICKY_BASE:
+			return isExtendedBase(block);
+		default:
+			return false;
+		}
+	}
+
+	public static boolean isRetractedPiston(Block block) {
+		switch (block.getType()) {
+		case PISTON_BASE:
+		case PISTON_STICKY_BASE:
+			return !isExtendedBase(block);
+		default:
+			return false;
+		}
 	}
 
 	/**
@@ -269,7 +485,7 @@ public class BlockPunchListener implements Listener {
 	 * @param base
 	 * @return
 	 */
-	private boolean isExtendedBase(Block base) {
+	private static boolean isExtendedBase(Block base) {
 		return (base.getData() & 8) != 0;
 	}
 }

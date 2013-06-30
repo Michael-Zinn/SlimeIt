@@ -48,11 +48,11 @@ public class SlimeRules {
 	 * @param block
 	 */
 	public void removeSlime(Block block) {
-		hasSlimeOnIt.get(MaterialData.from(block)).removeSlimeToGet.applyMaterialDataTo(block);
+		BlockPunchListener.replace(block, hasSlimeOnIt.get(MaterialData.from(block)).removeSlimeToGet.materialData);
 	}
 
 	public void addSlime(Block block) {
-		canGetSlimeOnIt.get(MaterialData.from(block)).addSlimeToGet.applyMaterialDataTo(block);
+		BlockPunchListener.replace(block, canGetSlimeOnIt.get(MaterialData.from(block)).addSlimeToGet.materialData);
 	}
 
 	/**
@@ -62,6 +62,7 @@ public class SlimeRules {
 	public SlimeRules() {
 		// FIXME This could take a good refactoring, it's way too much code.
 		// Maybe even define the relations in a txt file that can get parsed?
+		// See https://github.com/RedNifre/SlimeIt/issues/11
 
 		// useful stuff
 		Set<BlockFace> allFaces = new HashSet<BlockFace>();
@@ -258,14 +259,6 @@ public class SlimeRules {
 
 		public SlimeMetaData(Material material, byte data) {
 			materialData = new MaterialData(material, data);
-		}
-
-		public void applyMaterialDataTo(Block block) {
-			if (block.getType() != materialData.material) {
-				block.setType(materialData.material);
-			}
-			block.setData(materialData.data);
-			block.getState().update();
 		}
 	}
 }
