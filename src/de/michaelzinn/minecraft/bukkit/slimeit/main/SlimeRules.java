@@ -10,6 +10,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData;
+
 /**
  * A look up table that defines some things about blocks:
  * 
@@ -71,43 +73,43 @@ public class SlimeRules {
 
 		// Piston bases
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_BASE_RETRACTED_DOWN,
-				MaterialData.PISTON_STICKY_BASE_RETRACTED_DOWN, BlockFace.DOWN);
+				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_DOWN,
+				MaterialData.RETRACTED_STICKY_PISTON_BASE_DOWN, BlockFace.DOWN);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_BASE_RETRACTED_UP,
-				MaterialData.PISTON_STICKY_BASE_RETRACTED_UP, BlockFace.UP);
+				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_UP,
+				MaterialData.RETRACTED_STICKY_PISTON_BASE_UP, BlockFace.UP);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_BASE_RETRACTED_NORTH,
-				MaterialData.PISTON_STICKY_BASE_RETRACTED_NORTH, BlockFace.NORTH);
+				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_NORTH,
+				MaterialData.RETRACTED_STICKY_PISTON_BASE_NORTH, BlockFace.NORTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_BASE_RETRACTED_SOUTH,
-				MaterialData.PISTON_STICKY_BASE_RETRACTED_SOUTH, BlockFace.SOUTH);
+				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_SOUTH,
+				MaterialData.RETRACTED_STICKY_PISTON_BASE_SOUTH, BlockFace.SOUTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_BASE_RETRACTED_WEST,
-				MaterialData.PISTON_STICKY_BASE_RETRACTED_WEST, BlockFace.WEST);
+				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_WEST,
+				MaterialData.RETRACTED_STICKY_PISTON_BASE_WEST, BlockFace.WEST);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_BASE_RETRACTED_EAST,
-				MaterialData.PISTON_STICKY_BASE_RETRACTED_EAST, BlockFace.EAST);
+				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_EAST,
+				MaterialData.RETRACTED_STICKY_PISTON_BASE_EAST, BlockFace.EAST);
 
 		// Piston extensions
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_EXTENSION_DOWN,
-				MaterialData.PISTON_STICKY_EXTENSION_DOWN, BlockFace.DOWN);
+				MaterialData.NONSTICKY_PISTON_EXTENSION_DOWN,
+				MaterialData.STICKY_PISTON_EXTENSION_DOWN, BlockFace.DOWN);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_EXTENSION_UP,
-				MaterialData.PISTON_STICKY_EXTENSION_UP, BlockFace.UP);
+				MaterialData.NONSTICKY_PISTON_EXTENSION_UP,
+				MaterialData.STICKY_PISTON_EXTENSION_UP, BlockFace.UP);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_EXTENSION_NORTH,
-				MaterialData.PISTON_STICKY_EXTENSION_NORTH, BlockFace.NORTH);
+				MaterialData.NONSTICKY_PISTON_EXTENSION_NORTH,
+				MaterialData.STICKY_PISTON_EXTENSION_NORTH, BlockFace.NORTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_EXTENSION_SOUTH,
-				MaterialData.PISTON_STICKY_EXTENSION_SOUTH, BlockFace.SOUTH);
+				MaterialData.NONSTICKY_PISTON_EXTENSION_SOUTH,
+				MaterialData.STICKY_PISTON_EXTENSION_SOUTH, BlockFace.SOUTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_EXTENSION_WEST,
-				MaterialData.PISTON_STICKY_EXTENSION_WEST, BlockFace.WEST);
+				MaterialData.NONSTICKY_PISTON_EXTENSION_WEST,
+				MaterialData.STICKY_PISTON_EXTENSION_WEST, BlockFace.WEST);
 		defineBidirectionalSlimeRelation(
-				MaterialData.PISTON_EXTENSION_EAST,
-				MaterialData.PISTON_STICKY_EXTENSION_EAST, BlockFace.EAST);
+				MaterialData.NONSTICKY_PISTON_EXTENSION_EAST,
+				MaterialData.STICKY_PISTON_EXTENSION_EAST, BlockFace.EAST);
 	}
 
 	private void defineBidirectionalSlimeRelation(MaterialData withoutSlime, MaterialData withSlime, BlockFace... facesWithSlime) {
