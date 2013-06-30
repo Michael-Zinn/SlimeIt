@@ -1,5 +1,6 @@
 package de.michaelzinn.minecraft.bukkit.slimeit.main;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
@@ -33,27 +34,15 @@ public class SlimeRules {
 	private Map<MaterialData, SlimeMetaData> canGetSlimeOnIt = new Hashtable<MaterialData, SlimeMetaData>();
 	private Map<MaterialData, SlimeMetaData> hasSlimeOnIt = new Hashtable<MaterialData, SlimeMetaData>();
 
-	public MaterialData withoutSlime(Block block) {
-		return hasSlimeOnIt.get(MaterialData.from(block)).removeSlimeToGet.materialData;
-	}
-
-	public MaterialData withoutSlime(MaterialData materialData) {
-		return hasSlimeOnIt.get(materialData).removeSlimeToGet.materialData;
-	}
-
-	/**
-	 * Removes slime from block. Crashes when called with blocks that don't have
-	 * slime on it. Doesn't drop slime balls.
-	 * 
-	 * @param block
-	 */
-	public void removeSlime(Block block) {
-		BlockPunchListener.replace(block, hasSlimeOnIt.get(MaterialData.from(block)).removeSlimeToGet.materialData);
-	}
-
-	public void addSlime(Block block) {
-		BlockPunchListener.replace(block, canGetSlimeOnIt.get(MaterialData.from(block)).addSlimeToGet.materialData);
-	}
+	// useful stuff
+	private static final BlockFace[] allFaces = {
+			BlockFace.DOWN,
+			BlockFace.UP,
+			BlockFace.NORTH,
+			BlockFace.EAST,
+			BlockFace.SOUTH,
+			BlockFace.WEST
+	};
 
 	/**
 	 * This defines which blocks turn into which other blocks when slime is
@@ -64,182 +53,125 @@ public class SlimeRules {
 		// Maybe even define the relations in a txt file that can get parsed?
 		// See https://github.com/RedNifre/SlimeIt/issues/11
 
-		// useful stuff
-		Set<BlockFace> allFaces = new HashSet<BlockFace>();
-		allFaces.add(BlockFace.DOWN);
-		allFaces.add(BlockFace.UP);
-		allFaces.add(BlockFace.NORTH);
-		allFaces.add(BlockFace.EAST);
-		allFaces.add(BlockFace.SOUTH);
-		allFaces.add(BlockFace.WEST);
+		// Cobble
+		defineBidirectionalSlimeRelation(
+				MaterialData.COBBLESTONE,
+				MaterialData.MOSSY_COBBLESTONE, allFaces);
+		defineBidirectionalSlimeRelation(
+				MaterialData.COBBLE_WALL,
+				MaterialData.MOSSY_COBBLE_WALL, allFaces);
 
-		// ==== Cobblestone ================
+		// Stone bricks
+		defineBidirectionalSlimeRelation(
+				MaterialData.SMOOTH_BRICK,
+				MaterialData.MOSSY_SMOOTH_BRICK, allFaces);
+		defineUnidirectionalSlimeRelation(
+				MaterialData.CRACKED_SMOOTH_BRICK,
+				MaterialData.MOSSY_SMOOTH_BRICK, allFaces);
 
-		SlimeMetaData cobble = new SlimeMetaData(Material.COBBLESTONE, (byte) 0);
-		SlimeMetaData slimeyCobble = new SlimeMetaData(Material.MOSSY_COBBLESTONE, (byte) 0);
-		slimeyCobble.facesWithSlimeOnIt = allFaces;
+		// Piston bases
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_BASE_RETRACTED_DOWN,
+				MaterialData.PISTON_STICKY_BASE_RETRACTED_DOWN, BlockFace.DOWN);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_BASE_RETRACTED_UP,
+				MaterialData.PISTON_STICKY_BASE_RETRACTED_UP, BlockFace.UP);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_BASE_RETRACTED_NORTH,
+				MaterialData.PISTON_STICKY_BASE_RETRACTED_NORTH, BlockFace.NORTH);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_BASE_RETRACTED_SOUTH,
+				MaterialData.PISTON_STICKY_BASE_RETRACTED_SOUTH, BlockFace.SOUTH);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_BASE_RETRACTED_WEST,
+				MaterialData.PISTON_STICKY_BASE_RETRACTED_WEST, BlockFace.WEST);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_BASE_RETRACTED_EAST,
+				MaterialData.PISTON_STICKY_BASE_RETRACTED_EAST, BlockFace.EAST);
 
-		cobble.addSlimeToGet = slimeyCobble;
-		slimeyCobble.removeSlimeToGet = cobble;
+		// Piston extensions
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_EXTENSION_DOWN,
+				MaterialData.PISTON_STICKY_EXTENSION_DOWN, BlockFace.DOWN);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_EXTENSION_UP,
+				MaterialData.PISTON_STICKY_EXTENSION_UP, BlockFace.UP);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_EXTENSION_NORTH,
+				MaterialData.PISTON_STICKY_EXTENSION_NORTH, BlockFace.NORTH);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_EXTENSION_SOUTH,
+				MaterialData.PISTON_STICKY_EXTENSION_SOUTH, BlockFace.SOUTH);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_EXTENSION_WEST,
+				MaterialData.PISTON_STICKY_EXTENSION_WEST, BlockFace.WEST);
+		defineBidirectionalSlimeRelation(
+				MaterialData.PISTON_EXTENSION_EAST,
+				MaterialData.PISTON_STICKY_EXTENSION_EAST, BlockFace.EAST);
+	}
 
-		canGetSlimeOnIt.put(cobble.materialData, cobble);
-		hasSlimeOnIt.put(slimeyCobble.materialData, slimeyCobble);
+	private void defineBidirectionalSlimeRelation(MaterialData withoutSlime, MaterialData withSlime, BlockFace... facesWithSlime) {
+		SlimeMetaData metaWithout = new SlimeMetaData(withoutSlime);
+		SlimeMetaData metaWith = new SlimeMetaData(withSlime, facesWithSlime);
 
-		// ==== Cobblestone Wall ================
+		metaWithout.addSlimeToGet = metaWith;
+		metaWith.removeSlimeToGet = metaWithout;
 
-		SlimeMetaData cobbleWall = new SlimeMetaData(Material.COBBLE_WALL, (byte) 0);
-		SlimeMetaData slimeyCobbleWall = new SlimeMetaData(Material.COBBLE_WALL, (byte) 1);
-		slimeyCobbleWall.facesWithSlimeOnIt = allFaces;
+		canGetSlimeOnIt.put(metaWithout.materialData, metaWithout);
+		hasSlimeOnIt.put(metaWith.materialData, metaWith);
+	}
 
-		cobbleWall.addSlimeToGet = slimeyCobbleWall;
-		slimeyCobbleWall.removeSlimeToGet = cobbleWall;
-
-		canGetSlimeOnIt.put(cobbleWall.materialData, cobbleWall);
-		hasSlimeOnIt.put(slimeyCobbleWall.materialData, slimeyCobbleWall);
-
-		// ==== Stone Bricks (These are a special case) =============
-
-		SlimeMetaData stoneBrick = new SlimeMetaData(Material.SMOOTH_BRICK, (byte) 0);
-		SlimeMetaData slimeyStoneBrick = new SlimeMetaData(Material.SMOOTH_BRICK, (byte) 1);
-		SlimeMetaData crackedStoneBrick = new SlimeMetaData(Material.SMOOTH_BRICK, (byte) 2);
-		// note that chiseled stone bricks aren't affected by this mod. They are
-		// not treated as stone bricks
-
-		stoneBrick.addSlimeToGet = slimeyStoneBrick;
-		crackedStoneBrick.addSlimeToGet = slimeyStoneBrick;
-		slimeyStoneBrick.removeSlimeToGet = stoneBrick;
-		slimeyStoneBrick.facesWithSlimeOnIt = allFaces;
-
-		canGetSlimeOnIt.put(stoneBrick.materialData, stoneBrick);
-		canGetSlimeOnIt.put(crackedStoneBrick.materialData, crackedStoneBrick);
-		hasSlimeOnIt.put(slimeyStoneBrick.materialData, slimeyStoneBrick);
-
-		// ==== Piston bases (oh boy...) ===============
-		// nonsticky base, can only be slimed when retracted
-		SlimeMetaData pistonBaseDown = new SlimeMetaData(Material.PISTON_BASE, (byte) 0);
-		SlimeMetaData pistonBaseUp = new SlimeMetaData(Material.PISTON_BASE, (byte) 1);
-		SlimeMetaData pistonBaseNorth = new SlimeMetaData(Material.PISTON_BASE, (byte) 2);
-		SlimeMetaData pistonBaseSouth = new SlimeMetaData(Material.PISTON_BASE, (byte) 3);
-		SlimeMetaData pistonBaseWest = new SlimeMetaData(Material.PISTON_BASE, (byte) 4);
-		SlimeMetaData pistonBaseEast = new SlimeMetaData(Material.PISTON_BASE, (byte) 5);
-
-		// sticky, only has slime on it when retracted
-		SlimeMetaData slimeyPistonBaseDown = new SlimeMetaData(Material.PISTON_STICKY_BASE, (byte) 0);
-		SlimeMetaData slimeyPistonBaseUp = new SlimeMetaData(Material.PISTON_STICKY_BASE, (byte) 1);
-		SlimeMetaData slimeyPistonBaseNorth = new SlimeMetaData(Material.PISTON_STICKY_BASE, (byte) 2);
-		SlimeMetaData slimeyPistonBaseSouth = new SlimeMetaData(Material.PISTON_STICKY_BASE, (byte) 3);
-		SlimeMetaData slimeyPistonBaseWest = new SlimeMetaData(Material.PISTON_STICKY_BASE, (byte) 4);
-		SlimeMetaData slimeyPistonBaseEast = new SlimeMetaData(Material.PISTON_STICKY_BASE, (byte) 5);
-
-		// mapping
-		pistonBaseDown.addSlimeToGet = slimeyPistonBaseDown;
-		pistonBaseUp.addSlimeToGet = slimeyPistonBaseUp;
-		pistonBaseNorth.addSlimeToGet = slimeyPistonBaseNorth;
-		pistonBaseSouth.addSlimeToGet = slimeyPistonBaseSouth;
-		pistonBaseWest.addSlimeToGet = slimeyPistonBaseWest;
-		pistonBaseEast.addSlimeToGet = slimeyPistonBaseEast;
-
-		slimeyPistonBaseDown.removeSlimeToGet = pistonBaseDown;
-		slimeyPistonBaseUp.removeSlimeToGet = pistonBaseUp;
-		slimeyPistonBaseNorth.removeSlimeToGet = pistonBaseNorth;
-		slimeyPistonBaseSouth.removeSlimeToGet = pistonBaseSouth;
-		slimeyPistonBaseWest.removeSlimeToGet = pistonBaseWest;
-		slimeyPistonBaseEast.removeSlimeToGet = pistonBaseEast;
-
-		// faces
-		slimeyPistonBaseDown.facesWithSlimeOnIt.add(BlockFace.DOWN);
-		slimeyPistonBaseUp.facesWithSlimeOnIt.add(BlockFace.UP);
-		slimeyPistonBaseNorth.facesWithSlimeOnIt.add(BlockFace.NORTH);
-		slimeyPistonBaseSouth.facesWithSlimeOnIt.add(BlockFace.SOUTH);
-		slimeyPistonBaseWest.facesWithSlimeOnIt.add(BlockFace.WEST);
-		slimeyPistonBaseEast.facesWithSlimeOnIt.add(BlockFace.EAST);
-
-		hasSlimeOnIt.put(slimeyPistonBaseDown.materialData, slimeyPistonBaseDown);
-		hasSlimeOnIt.put(slimeyPistonBaseUp.materialData, slimeyPistonBaseUp);
-		hasSlimeOnIt.put(slimeyPistonBaseNorth.materialData, slimeyPistonBaseNorth);
-		hasSlimeOnIt.put(slimeyPistonBaseSouth.materialData, slimeyPistonBaseSouth);
-		hasSlimeOnIt.put(slimeyPistonBaseWest.materialData, slimeyPistonBaseWest);
-		hasSlimeOnIt.put(slimeyPistonBaseEast.materialData, slimeyPistonBaseEast);
-
-		canGetSlimeOnIt.put(pistonBaseDown.materialData, pistonBaseDown);
-		canGetSlimeOnIt.put(pistonBaseUp.materialData, pistonBaseUp);
-		canGetSlimeOnIt.put(pistonBaseNorth.materialData, pistonBaseNorth);
-		canGetSlimeOnIt.put(pistonBaseSouth.materialData, pistonBaseSouth);
-		canGetSlimeOnIt.put(pistonBaseWest.materialData, pistonBaseWest);
-		canGetSlimeOnIt.put(pistonBaseEast.materialData, pistonBaseEast);
-
-		// ==== Piston Extension =====================
-		SlimeMetaData pistonExtensionDown = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 0);
-		SlimeMetaData pistonExtensionUp = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 1);
-		SlimeMetaData pistonExtensionNorth = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 2);
-		SlimeMetaData pistonExtensionSouth = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 3);
-		SlimeMetaData pistonExtensionWest = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 4);
-		SlimeMetaData pistonExtensionEast = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 5);
-
-		SlimeMetaData slimeyPistonExtensionDown = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 8);
-		SlimeMetaData slimeyPistonExtensionUp = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 9);
-		SlimeMetaData slimeyPistonExtensionNorth = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 10);
-		SlimeMetaData slimeyPistonExtensionSouth = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 11);
-		SlimeMetaData slimeyPistonExtensionWest = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 12);
-		SlimeMetaData slimeyPistonExtensionEast = new SlimeMetaData(Material.PISTON_EXTENSION, (byte) 13);
-
-		slimeyPistonExtensionDown.facesWithSlimeOnIt.add(BlockFace.DOWN);
-		slimeyPistonExtensionUp.facesWithSlimeOnIt.add(BlockFace.UP);
-		slimeyPistonExtensionNorth.facesWithSlimeOnIt.add(BlockFace.NORTH);
-		slimeyPistonExtensionSouth.facesWithSlimeOnIt.add(BlockFace.SOUTH);
-		slimeyPistonExtensionWest.facesWithSlimeOnIt.add(BlockFace.WEST);
-		slimeyPistonExtensionEast.facesWithSlimeOnIt.add(BlockFace.EAST);
-
-		pistonExtensionDown.addSlimeToGet = slimeyPistonExtensionDown;
-		pistonExtensionUp.addSlimeToGet = slimeyPistonExtensionUp;
-		pistonExtensionNorth.addSlimeToGet = slimeyPistonExtensionNorth;
-		pistonExtensionSouth.addSlimeToGet = slimeyPistonExtensionSouth;
-		pistonExtensionWest.addSlimeToGet = slimeyPistonExtensionWest;
-		pistonExtensionEast.addSlimeToGet = slimeyPistonExtensionEast;
-
-		slimeyPistonExtensionDown.removeSlimeToGet = pistonExtensionDown;
-		slimeyPistonExtensionUp.removeSlimeToGet = pistonExtensionUp;
-		slimeyPistonExtensionNorth.removeSlimeToGet = pistonExtensionNorth;
-		slimeyPistonExtensionSouth.removeSlimeToGet = pistonExtensionSouth;
-		slimeyPistonExtensionWest.removeSlimeToGet = pistonExtensionWest;
-		slimeyPistonExtensionEast.removeSlimeToGet = pistonExtensionEast;
-
-		canGetSlimeOnIt.put(pistonExtensionDown.materialData, pistonExtensionDown);
-		canGetSlimeOnIt.put(pistonExtensionUp.materialData, pistonExtensionUp);
-		canGetSlimeOnIt.put(pistonExtensionNorth.materialData, pistonExtensionNorth);
-		canGetSlimeOnIt.put(pistonExtensionSouth.materialData, pistonExtensionSouth);
-		canGetSlimeOnIt.put(pistonExtensionWest.materialData, pistonExtensionWest);
-		canGetSlimeOnIt.put(pistonExtensionEast.materialData, pistonExtensionEast);
-
-		hasSlimeOnIt.put(slimeyPistonExtensionDown.materialData, slimeyPistonExtensionDown);
-		hasSlimeOnIt.put(slimeyPistonExtensionUp.materialData, slimeyPistonExtensionUp);
-		hasSlimeOnIt.put(slimeyPistonExtensionNorth.materialData, slimeyPistonExtensionNorth);
-		hasSlimeOnIt.put(slimeyPistonExtensionSouth.materialData, slimeyPistonExtensionSouth);
-		hasSlimeOnIt.put(slimeyPistonExtensionWest.materialData, slimeyPistonExtensionWest);
-		hasSlimeOnIt.put(slimeyPistonExtensionEast.materialData, slimeyPistonExtensionEast);
-
+	/**
+	 * Special case, so that a cracked stone can turn into a mossy stone, but a
+	 * mossy stone will always revert to a non-cracked stone
+	 * 
+	 * @param withoutSlime
+	 * @param withSlime
+	 * @param facesWithSlime
+	 */
+	private void defineUnidirectionalSlimeRelation(MaterialData withoutSlime, MaterialData withSlime, BlockFace... facesWithSlime) {
+		SlimeMetaData metaWithout = new SlimeMetaData(withoutSlime);
+		SlimeMetaData metaWith = new SlimeMetaData(withSlime, facesWithSlime);
+		metaWithout.addSlimeToGet = metaWith;
+		canGetSlimeOnIt.put(metaWithout.materialData, metaWithout);
 	}
 
 	public boolean canGetSlimeOnIt(Block block) {
-		return canGetSlimeOnIt.containsKey(MaterialData.from(block));
+		return canGetSlimeOnIt.containsKey(MaterialData.get(block));
 	}
 
 	public boolean canGetSlimeOnIt(Block block, BlockFace face) {
 		if (canGetSlimeOnIt(block)) {
-			return canGetSlimeOnIt.get(MaterialData.from(block)).addSlimeToGet.facesWithSlimeOnIt.contains(face);
+			return canGetSlimeOnIt.get(MaterialData.get(block)).addSlimeToGet.facesWithSlimeOnIt.contains(face);
 		}
 		return false;
 	}
 
 	public boolean hasSlimeOnIt(Block block) {
-		return hasSlimeOnIt.containsKey(MaterialData.from(block));
+		return hasSlimeOnIt.containsKey(MaterialData.get(block));
 	}
 
 	public boolean hasSlimeOnIt(Block block, BlockFace face) {
 		if (hasSlimeOnIt(block)) {
-			return hasSlimeOnIt.get(MaterialData.from(block)).facesWithSlimeOnIt.contains(face);
+			return hasSlimeOnIt.get(MaterialData.get(block)).facesWithSlimeOnIt.contains(face);
 		}
 		return false;
+	}
+
+	public MaterialData withoutSlime(Block block) {
+		return hasSlimeOnIt.get(MaterialData.get(block)).removeSlimeToGet.materialData;
+	}
+
+	public MaterialData withoutSlime(MaterialData materialData) {
+		return hasSlimeOnIt.get(materialData).removeSlimeToGet.materialData;
+	}
+
+	public MaterialData withSlime(Block block) {
+		return canGetSlimeOnIt.get(MaterialData.get(block)).addSlimeToGet.materialData;
+	}
+
+	public MaterialData withSlime(MaterialData materialData) {
+		return canGetSlimeOnIt.get(materialData).addSlimeToGet.materialData;
 	}
 
 	/**
@@ -257,8 +189,21 @@ public class SlimeRules {
 		public SlimeMetaData addSlimeToGet;
 		public SlimeMetaData removeSlimeToGet;
 
+		public SlimeMetaData(MaterialData materialData, BlockFace... sideWithSlimeOnIt) {
+			this(materialData.material, materialData.data, sideWithSlimeOnIt);
+		}
+
+		public SlimeMetaData(Material material, byte data, BlockFace... sideWithSlimeOnIt) {
+			this(material, data);
+			facesWithSlimeOnIt = new HashSet<BlockFace>(Arrays.asList(sideWithSlimeOnIt));
+		}
+
+		public SlimeMetaData(MaterialData materialData) {
+			this(materialData.material, materialData.data);
+		}
+
 		public SlimeMetaData(Material material, byte data) {
-			materialData = new MaterialData(material, data);
+			materialData = MaterialData.get(material, data);
 		}
 	}
 }

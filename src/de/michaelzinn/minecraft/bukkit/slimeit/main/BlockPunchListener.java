@@ -94,7 +94,7 @@ public class BlockPunchListener implements Listener {
 		// simple cases, break according to slimeRules
 		if (slimeRules.hasSlimeOnIt(block)) {
 			event.setCancelled(true);
-			MaterialData original = MaterialData.from(block);
+			MaterialData original = MaterialData.get(block);
 			block.setType(Material.AIR);
 			world.dropItemNaturally(location, new ItemStack(slimeRules.withoutSlime(original).material));
 			world.dropItemNaturally(location, slimeBall);
@@ -131,7 +131,7 @@ public class BlockPunchListener implements Listener {
 			}
 
 			if (slimeRules.hasSlimeOnIt(block, event.getBlockFace())) {
-				slimeRules.removeSlime(block);
+				replace(block, slimeRules.withoutSlime(block));
 
 				world.dropItemNaturally(block.getRelative(face).getLocation(), new ItemStack(Material.SLIME_BALL, 1));
 				world.playSound(block.getLocation(), Sound.SLIME_ATTACK, 1, 1);
@@ -146,7 +146,7 @@ public class BlockPunchListener implements Listener {
 					} else {
 						tool.setAmount(targetAmount);
 					}
-					slimeRules.addSlime(block);
+					replace(block, slimeRules.withSlime(block));
 
 					Sound sound = Sound.SLIME_WALK;
 					switch ((int) (Math.rint(Math.random() * 1))) {
