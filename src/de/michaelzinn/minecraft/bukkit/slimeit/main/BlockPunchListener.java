@@ -1,5 +1,10 @@
 package de.michaelzinn.minecraft.bukkit.slimeit.main;
 
+import static de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.BukkitPlus.*;
+import static de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData.Tag.*;
+
+import java.util.logging.Level;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -13,8 +18,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.B;
 import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData;
+import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData.Tag;
 
 /**
  * Handles what happens when the player left clicks, right clicks or destroys a
@@ -30,8 +35,10 @@ public class BlockPunchListener implements Listener {
 	// private final SlimeIt plugin;
 	SlimeRules slimeRules = new SlimeRules();
 
+	SlimeIt plugin;
+
 	public BlockPunchListener(SlimeIt main) {
-		// plugin = main;
+		plugin = main;
 	}
 
 	@EventHandler
@@ -58,7 +65,7 @@ public class BlockPunchListener implements Listener {
 
 		// special case1: cracked stone bricks
 
-		if (MaterialData.CRACKED_SMOOTH_BRICK.matches(block)) {
+		if (MaterialData.CRACKED_SMOOTH_BRICK.is(block)) {
 			event.setCancelled(true);
 			block.setType(Material.AIR);
 			world.dropItemNaturally(location, new ItemStack(Material.SMOOTH_BRICK));
@@ -67,9 +74,9 @@ public class BlockPunchListener implements Listener {
 
 		// special case 2: pistons
 		// piston head
-		if (MaterialData.STICKY_PISTON_EXTENSION.contains(materialData)) {
+		if (materialData.is(STICKY, PISTON, EXTENSION)) {
 			event.setCancelled(true);
-			Block base = B.getPistonBase(block);
+			Block base = getPistonBase(block);
 			base.setType(Material.AIR);
 			block.setType(Material.AIR);
 			world.dropItemNaturally(base.getLocation(), new ItemStack(Material.PISTON_BASE));
@@ -77,9 +84,9 @@ public class BlockPunchListener implements Listener {
 			return;
 		}
 		// sticky piston base
-		if (MaterialData.EXTENDED_STICKY_PISTON_BASE.contains(materialData)) {
+		if (materialData.is(EXTENDED, STICKY, PISTON, BASE)) {
 			event.setCancelled(true);
-			Block extension = B.getPistonExtension(block);
+			Block extension = getPistonExtension(block);
 			block.setType(Material.AIR);
 			extension.setType(Material.AIR);
 			world.dropItemNaturally(block.getLocation(), new ItemStack(Material.PISTON_BASE));
@@ -117,13 +124,13 @@ public class BlockPunchListener implements Listener {
 		switch (event.getAction()) {
 
 		case LEFT_CLICK_BLOCK:
-			if (MaterialData.SMOOTH_BRICK.matches(block)) {
-				if (B.isPickaxe(tool)) {
+			if (MaterialData.SMOOTH_BRICK.is(block)) {
+				if (isPickaxe(tool)) {
 					MaterialData.CRACKED_SMOOTH_BRICK.applyTo(block);
 				}
 			}
 			else if (slimeRules.hasSlimeOnIt(block, event.getBlockFace())) {
-				B.replace(block, slimeRules.withoutSlime(block));
+				replace(block, slimeRules.withoutSlime(block));
 				world.dropItemNaturally(block.getRelative(face).getLocation(), new ItemStack(Material.SLIME_BALL, 1));
 				world.playSound(block.getLocation(), Sound.SLIME_ATTACK, 1, 1);
 			}
@@ -138,7 +145,7 @@ public class BlockPunchListener implements Listener {
 					} else {
 						tool.setAmount(targetAmount);
 					}
-					B.replace(block, slimeRules.withSlime(block));
+					replace(block, slimeRules.withSlime(block));
 
 					Sound sound = Sound.SLIME_WALK;
 					switch ((int) (Math.rint(Math.random() * 1))) {
@@ -150,6 +157,12 @@ public class BlockPunchListener implements Listener {
 						break;
 					}
 					player.getWorld().playSound(block.getLocation(), sound, 1, 1);
+				}
+			}
+			if (tool.getType() == Material.STICK) {
+				plugin.log.log(Level.INFO, "Tags: " + MaterialData.get(block).TAGS.size());
+				for (Tag tag : MaterialData.get(block).TAGS) {
+					plugin.log.log(Level.INFO, " - " + tag);
 				}
 			}
 			break;
