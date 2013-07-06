@@ -1,9 +1,7 @@
 package de.michaelzinn.minecraft.bukkit.slimeit.main;
 
 import static de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.BukkitPlus.*;
-import static de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData.Tag.*;
-
-import java.util.logging.Level;
+import static de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.Thing.Tag.*;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,8 +16,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData;
-import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData.Tag;
+import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.Thing;
 
 /**
  * Handles what happens when the player left clicks, right clicks or destroys a
@@ -57,7 +54,7 @@ public class BlockPunchListener implements Listener {
 		// Material type = block.getType();
 		// byte data = block.getData();
 
-		MaterialData materialData = MaterialData.get(block);
+		Thing thingInBlock = Thing.in(block);
 		Location location = block.getLocation();
 		World world = block.getWorld();
 
@@ -65,7 +62,7 @@ public class BlockPunchListener implements Listener {
 
 		// special case1: cracked stone bricks
 
-		if (MaterialData.CRACKED_SMOOTH_BRICK.is(block)) {
+		if (thingInBlock.is(CRACKED, STONE, BRICK, BLOCK)) {
 			event.setCancelled(true);
 			block.setType(Material.AIR);
 			world.dropItemNaturally(location, new ItemStack(Material.SMOOTH_BRICK));
@@ -74,7 +71,7 @@ public class BlockPunchListener implements Listener {
 
 		// special case 2: pistons
 		// piston head
-		if (materialData.is(STICKY, PISTON, EXTENSION)) {
+		if (thingInBlock.is(STICKY, PISTON, EXTENSION)) {
 			event.setCancelled(true);
 			Block base = getPistonBase(block);
 			base.setType(Material.AIR);
@@ -84,7 +81,7 @@ public class BlockPunchListener implements Listener {
 			return;
 		}
 		// sticky piston base
-		if (materialData.is(EXTENDED, STICKY, PISTON, BASE)) {
+		if (thingInBlock.is(EXTENDED, STICKY, PISTON, BASE)) {
 			event.setCancelled(true);
 			Block extension = getPistonExtension(block);
 			block.setType(Material.AIR);
@@ -97,7 +94,7 @@ public class BlockPunchListener implements Listener {
 		// simple cases, break according to slimeRules
 		if (slimeRules.hasSlimeOnIt(block)) {
 			event.setCancelled(true);
-			MaterialData original = MaterialData.get(block);
+			Thing original = Thing.in(block);
 			block.setType(Material.AIR);
 			world.dropItemNaturally(location, new ItemStack(slimeRules.withoutSlime(original).material));
 			world.dropItemNaturally(location, slimeBall);
@@ -119,14 +116,14 @@ public class BlockPunchListener implements Listener {
 		BlockFace face = event.getBlockFace();
 		World world = block.getWorld();
 		Player player = event.getPlayer();
-		ItemStack tool = player.getItemInHand();
+		ItemStack playerHand = player.getItemInHand();
 
 		switch (event.getAction()) {
 
 		case LEFT_CLICK_BLOCK:
-			if (MaterialData.SMOOTH_BRICK.is(block)) {
-				if (isPickaxe(tool)) {
-					MaterialData.CRACKED_SMOOTH_BRICK.applyTo(block);
+			if (Thing.STONE_BRICK_BLOCK.is(block)) {
+				if (Thing.in(playerHand).is(PICKAXE)) {
+					Thing.CRACKED_STONE_BRICK_BLOCK.applyTo(block);
 				}
 			}
 			else if (slimeRules.hasSlimeOnIt(block, event.getBlockFace())) {
@@ -137,13 +134,13 @@ public class BlockPunchListener implements Listener {
 			break;
 
 		case RIGHT_CLICK_BLOCK:
-			if (tool.getType() == Material.SLIME_BALL) {
-				if (slimeRules.canGetSlimeOnIt(block, event.getBlockFace())) {
-					int targetAmount = tool.getAmount() - 1;
+			if (playerHand.getType() == Material.SLIME_BALL) {
+				if (slimeRules.canGetSlimeOnIt(block, face)) {
+					int targetAmount = playerHand.getAmount() - 1;
 					if (targetAmount <= 0) {
 						player.setItemInHand(null);
 					} else {
-						tool.setAmount(targetAmount);
+						playerHand.setAmount(targetAmount);
 					}
 					replace(block, slimeRules.withSlime(block));
 
@@ -159,12 +156,13 @@ public class BlockPunchListener implements Listener {
 					player.getWorld().playSound(block.getLocation(), sound, 1, 1);
 				}
 			}
-			if (tool.getType() == Material.STICK) {
-				plugin.log.log(Level.INFO, "Tags: " + MaterialData.get(block).TAGS.size());
-				for (Tag tag : MaterialData.get(block).TAGS) {
-					plugin.log.log(Level.INFO, " - " + tag);
-				}
-			}
+			// if (playerHand.getType() == Material.STICK) {
+			// plugin.log.log(Level.INFO, "Tags: " +
+			// Thing.in(block).TAGS.size());
+			// for (Tag tag : Thing.in(block).TAGS) {
+			// plugin.log.log(Level.INFO, " - " + tag);
+			// }
+			// }
 			break;
 		}
 	}

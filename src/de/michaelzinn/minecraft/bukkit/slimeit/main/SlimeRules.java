@@ -10,7 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData;
+import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.Thing;
 
 /**
  * A look up table that defines some things about blocks:
@@ -33,8 +33,8 @@ import de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData;
 
 public class SlimeRules {
 
-	private Map<MaterialData, SlimeMetaData> canGetSlimeOnIt = new Hashtable<MaterialData, SlimeMetaData>();
-	private Map<MaterialData, SlimeMetaData> hasSlimeOnIt = new Hashtable<MaterialData, SlimeMetaData>();
+	private Map<Thing, SlimeMetaData> canGetSlimeOnIt = new Hashtable<Thing, SlimeMetaData>();
+	private Map<Thing, SlimeMetaData> hasSlimeOnIt = new Hashtable<Thing, SlimeMetaData>();
 
 	// useful stuff
 	private static final BlockFace[] allFaces = {
@@ -57,62 +57,62 @@ public class SlimeRules {
 
 		// Cobble
 		defineBidirectionalSlimeRelation(
-				MaterialData.COBBLESTONE,
-				MaterialData.MOSSY_COBBLESTONE, allFaces);
+				Thing.COBBLE_STONE_BLOCK,
+				Thing.MOSSY_COBBLE_STONE_BLOCK, allFaces);
 		defineBidirectionalSlimeRelation(
-				MaterialData.COBBLE_WALL,
-				MaterialData.MOSSY_COBBLE_WALL, allFaces);
+				Thing.COBBLE_STONE_WALL,
+				Thing.MOSSY_COBBLE_STONE_WALL, allFaces);
 
 		// Stone bricks
 		defineBidirectionalSlimeRelation(
-				MaterialData.SMOOTH_BRICK,
-				MaterialData.MOSSY_SMOOTH_BRICK, allFaces);
+				Thing.STONE_BRICK_BLOCK,
+				Thing.MOSSY_STONE_BRICK_BLOCK, allFaces);
 		defineUnidirectionalSlimeRelation(
-				MaterialData.CRACKED_SMOOTH_BRICK,
-				MaterialData.MOSSY_SMOOTH_BRICK, allFaces);
+				Thing.CRACKED_STONE_BRICK_BLOCK,
+				Thing.MOSSY_STONE_BRICK_BLOCK, allFaces);
 
 		// Piston bases
 		defineBidirectionalSlimeRelation(
-				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_DOWN,
-				MaterialData.RETRACTED_STICKY_PISTON_BASE_DOWN, BlockFace.DOWN);
+				Thing.RETRACTED_NONSTICKY_PISTON_BASE_DOWN,
+				Thing.RETRACTED_STICKY_PISTON_BASE_DOWN, BlockFace.DOWN);
 		defineBidirectionalSlimeRelation(
-				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_UP,
-				MaterialData.RETRACTED_STICKY_PISTON_BASE_UP, BlockFace.UP);
+				Thing.RETRACTED_NONSTICKY_PISTON_BASE_UP,
+				Thing.RETRACTED_STICKY_PISTON_BASE_UP, BlockFace.UP);
 		defineBidirectionalSlimeRelation(
-				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_NORTH,
-				MaterialData.RETRACTED_STICKY_PISTON_BASE_NORTH, BlockFace.NORTH);
+				Thing.RETRACTED_NONSTICKY_PISTON_BASE_NORTH,
+				Thing.RETRACTED_STICKY_PISTON_BASE_NORTH, BlockFace.NORTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_SOUTH,
-				MaterialData.RETRACTED_STICKY_PISTON_BASE_SOUTH, BlockFace.SOUTH);
+				Thing.RETRACTED_NONSTICKY_PISTON_BASE_SOUTH,
+				Thing.RETRACTED_STICKY_PISTON_BASE_SOUTH, BlockFace.SOUTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_WEST,
-				MaterialData.RETRACTED_STICKY_PISTON_BASE_WEST, BlockFace.WEST);
+				Thing.RETRACTED_NONSTICKY_PISTON_BASE_WEST,
+				Thing.RETRACTED_STICKY_PISTON_BASE_WEST, BlockFace.WEST);
 		defineBidirectionalSlimeRelation(
-				MaterialData.RETRACTED_NONSTICKY_PISTON_BASE_EAST,
-				MaterialData.RETRACTED_STICKY_PISTON_BASE_EAST, BlockFace.EAST);
+				Thing.RETRACTED_NONSTICKY_PISTON_BASE_EAST,
+				Thing.RETRACTED_STICKY_PISTON_BASE_EAST, BlockFace.EAST);
 
 		// Piston extensions
 		defineBidirectionalSlimeRelation(
-				MaterialData.NONSTICKY_PISTON_EXTENSION_DOWN,
-				MaterialData.STICKY_PISTON_EXTENSION_DOWN, BlockFace.DOWN);
+				Thing.EXTENDED_NONSTICKY_PISTON_EXTENSION_DOWN,
+				Thing.EXTENDED_STICKY_PISTON_EXTENSION_DOWN, BlockFace.DOWN);
 		defineBidirectionalSlimeRelation(
-				MaterialData.NONSTICKY_PISTON_EXTENSION_UP,
-				MaterialData.STICKY_PISTON_EXTENSION_UP, BlockFace.UP);
+				Thing.EXTENDED_NONSTICKY_PISTON_EXTENSION_UP,
+				Thing.EXTENDED_STICKY_PISTON_EXTENSION_UP, BlockFace.UP);
 		defineBidirectionalSlimeRelation(
-				MaterialData.NONSTICKY_PISTON_EXTENSION_NORTH,
-				MaterialData.STICKY_PISTON_EXTENSION_NORTH, BlockFace.NORTH);
+				Thing.EXTENDED_NONSTICKY_PISTON_EXTENSION_NORTH,
+				Thing.EXTENDED_STICKY_PISTON_EXTENSION_NORTH, BlockFace.NORTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.NONSTICKY_PISTON_EXTENSION_SOUTH,
-				MaterialData.STICKY_PISTON_EXTENSION_SOUTH, BlockFace.SOUTH);
+				Thing.EXTENDED_NONSTICKY_PISTON_EXTENSION_SOUTH,
+				Thing.EXTENDED_STICKY_PISTON_EXTENSION_SOUTH, BlockFace.SOUTH);
 		defineBidirectionalSlimeRelation(
-				MaterialData.NONSTICKY_PISTON_EXTENSION_WEST,
-				MaterialData.STICKY_PISTON_EXTENSION_WEST, BlockFace.WEST);
+				Thing.EXTENDED_NONSTICKY_PISTON_EXTENSION_WEST,
+				Thing.EXTENDED_STICKY_PISTON_EXTENSION_WEST, BlockFace.WEST);
 		defineBidirectionalSlimeRelation(
-				MaterialData.NONSTICKY_PISTON_EXTENSION_EAST,
-				MaterialData.STICKY_PISTON_EXTENSION_EAST, BlockFace.EAST);
+				Thing.EXTENDED_NONSTICKY_PISTON_EXTENSION_EAST,
+				Thing.EXTENDED_STICKY_PISTON_EXTENSION_EAST, BlockFace.EAST);
 	}
 
-	private void defineBidirectionalSlimeRelation(MaterialData withoutSlime, MaterialData withSlime, BlockFace... facesWithSlime) {
+	private void defineBidirectionalSlimeRelation(Thing withoutSlime, Thing withSlime, BlockFace... facesWithSlime) {
 		SlimeMetaData metaWithout = new SlimeMetaData(withoutSlime);
 		SlimeMetaData metaWith = new SlimeMetaData(withSlime, facesWithSlime);
 
@@ -131,7 +131,7 @@ public class SlimeRules {
 	 * @param withSlime
 	 * @param facesWithSlime
 	 */
-	private void defineUnidirectionalSlimeRelation(MaterialData withoutSlime, MaterialData withSlime, BlockFace... facesWithSlime) {
+	private void defineUnidirectionalSlimeRelation(Thing withoutSlime, Thing withSlime, BlockFace... facesWithSlime) {
 		SlimeMetaData metaWithout = new SlimeMetaData(withoutSlime);
 		SlimeMetaData metaWith = new SlimeMetaData(withSlime, facesWithSlime);
 		metaWithout.addSlimeToGet = metaWith;
@@ -139,40 +139,40 @@ public class SlimeRules {
 	}
 
 	public boolean canGetSlimeOnIt(Block block) {
-		return canGetSlimeOnIt.containsKey(MaterialData.get(block));
+		return canGetSlimeOnIt.containsKey(Thing.in(block));
 	}
 
 	public boolean canGetSlimeOnIt(Block block, BlockFace face) {
 		if (canGetSlimeOnIt(block)) {
-			return canGetSlimeOnIt.get(MaterialData.get(block)).addSlimeToGet.facesWithSlimeOnIt.contains(face);
+			return canGetSlimeOnIt.get(Thing.in(block)).addSlimeToGet.facesWithSlimeOnIt.contains(face);
 		}
 		return false;
 	}
 
 	public boolean hasSlimeOnIt(Block block) {
-		return hasSlimeOnIt.containsKey(MaterialData.get(block));
+		return hasSlimeOnIt.containsKey(Thing.in(block));
 	}
 
 	public boolean hasSlimeOnIt(Block block, BlockFace face) {
 		if (hasSlimeOnIt(block)) {
-			return hasSlimeOnIt.get(MaterialData.get(block)).facesWithSlimeOnIt.contains(face);
+			return hasSlimeOnIt.get(Thing.in(block)).facesWithSlimeOnIt.contains(face);
 		}
 		return false;
 	}
 
-	public MaterialData withoutSlime(Block block) {
-		return hasSlimeOnIt.get(MaterialData.get(block)).removeSlimeToGet.materialData;
+	public Thing withoutSlime(Block block) {
+		return hasSlimeOnIt.get(Thing.in(block)).removeSlimeToGet.materialData;
 	}
 
-	public MaterialData withoutSlime(MaterialData materialData) {
+	public Thing withoutSlime(Thing materialData) {
 		return hasSlimeOnIt.get(materialData).removeSlimeToGet.materialData;
 	}
 
-	public MaterialData withSlime(Block block) {
-		return canGetSlimeOnIt.get(MaterialData.get(block)).addSlimeToGet.materialData;
+	public Thing withSlime(Block block) {
+		return canGetSlimeOnIt.get(Thing.in(block)).addSlimeToGet.materialData;
 	}
 
-	public MaterialData withSlime(MaterialData materialData) {
+	public Thing withSlime(Thing materialData) {
 		return canGetSlimeOnIt.get(materialData).addSlimeToGet.materialData;
 	}
 
@@ -185,13 +185,13 @@ public class SlimeRules {
 	 * 
 	 */
 	private class SlimeMetaData {
-		public MaterialData materialData;
+		public Thing materialData;
 		public Set<BlockFace> facesWithSlimeOnIt = new HashSet<BlockFace>();
 
 		public SlimeMetaData addSlimeToGet;
 		public SlimeMetaData removeSlimeToGet;
 
-		public SlimeMetaData(MaterialData materialData, BlockFace... sideWithSlimeOnIt) {
+		public SlimeMetaData(Thing materialData, BlockFace... sideWithSlimeOnIt) {
 			this(materialData.material, materialData.data, sideWithSlimeOnIt);
 		}
 
@@ -200,12 +200,12 @@ public class SlimeRules {
 			facesWithSlimeOnIt = new HashSet<BlockFace>(Arrays.asList(sideWithSlimeOnIt));
 		}
 
-		public SlimeMetaData(MaterialData materialData) {
+		public SlimeMetaData(Thing materialData) {
 			this(materialData.material, materialData.data);
 		}
 
 		public SlimeMetaData(Material material, byte data) {
-			materialData = MaterialData.get(material, data);
+			materialData = Thing.in(material, data);
 		}
 	}
 }

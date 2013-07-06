@@ -1,13 +1,9 @@
 package de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus;
 
-import static de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.MaterialData.Tag.*;
-
-import java.util.HashSet;
-import java.util.Set;
+import static de.michaelzinn.minecraft.bukkit.slimeit.bukkitplus.Thing.Tag.*;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * The beginning of the BukkitPlus library.
@@ -35,11 +31,11 @@ public class BukkitPlus {
 	public static void replace(Block block, Material newMaterial) {
 		// TODO later, this should attempt to replace while keeping the
 		// orientation.
-		replace(block, MaterialData.get(newMaterial, (byte) 0));
+		replace(block, Thing.in(newMaterial, (byte) 0));
 	}
 
-	public static void replace(Block block, MaterialData newBlock) {
-		MaterialData oldBlock = MaterialData.get(block);
+	public static void replace(Block block, Thing newBlock) {
+		Thing oldBlock = Thing.in(block);
 
 		if (oldBlock.is(PISTON)) {
 			if (newBlock.is(PISTON)) {
@@ -89,34 +85,13 @@ public class BukkitPlus {
 		}
 	}
 
-	// Pick axes //////////////////////////////////////////////
-
-	private static final Set<Material> PICKAXES = new HashSet<Material>();
-	static {
-		PICKAXES.add(Material.WOOD_PICKAXE);
-		PICKAXES.add(Material.STONE_PICKAXE);
-		PICKAXES.add(Material.IRON_PICKAXE);
-		PICKAXES.add(Material.GOLD_PICKAXE);
-		PICKAXES.add(Material.DIAMOND_PICKAXE);
-	}
-
-	/**
-	 * This one is a bit odd, should be removed/changed later
-	 * 
-	 * @param stack
-	 * @return
-	 */
-	public static boolean isPickaxe(ItemStack stack) {
-		return PICKAXES.contains(stack.getType());
-	}
-
 	/**
 	 * 
 	 * @param pistonPart
 	 * @return the extension or null if there's no extension
 	 */
 	public static Block getPistonExtension(Block pistonPart) {
-		MaterialData thing = MaterialData.get(pistonPart);
+		Thing thing = Thing.in(pistonPart);
 
 		if (thing.isnt(EXTENDED, PISTON)) {
 			return null;
@@ -131,7 +106,7 @@ public class BukkitPlus {
 	}
 
 	public static Block getPistonBase(Block block) {
-		MaterialData thing = MaterialData.get(block);
+		Thing thing = Thing.in(block);
 		if (thing.isnt(PISTON)) {
 			return null;
 		}
