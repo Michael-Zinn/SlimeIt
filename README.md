@@ -1,6 +1,8 @@
 SlimeIt
 =======
 
+*Project is on hold indefinitely because I don't have time to work on this for now, so don't expect any updates in the near future.*
+
 Minecraft Bukkit plugin that consolidates some redundant gameplay elements into one.
 For information what this is and what you should do with it see the wiki on github:
 https://github.com/RedNifre/SlimeIt/wiki
